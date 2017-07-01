@@ -1,4 +1,4 @@
 oauthlib
 requests
 requests-oauthlib
-twitter_async_upload
+twitter-media-upload
