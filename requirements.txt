@@ -1,4 +1,5 @@
 oauthlib
 requests
 requests-oauthlib
+imdbpy
 twitter-media-upload
