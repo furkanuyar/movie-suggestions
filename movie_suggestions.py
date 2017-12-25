@@ -1,22 +1,21 @@
-import urllib2
 import re
-import requests
 import os
-from imdb import IMDb
+import sys
+import urllib2
+import requests
 from requests_oauthlib import OAuth1
 from twitter_media_upload import async_upload
+from imdbpie import Imdb
 
 POST_TWEET_URL = 'https://api.twitter.com/1.1/statuses/update.json'
 
-CONSUMER_KEY = 'your_consumer_key'
-CONSUMER_SECRET = 'your_consumer_secret'
-ACCESS_TOKEN = 'your_access_token'
-ACCESS_TOKEN_SECRET = 'your_access_token_secret'
+CONSUMER_KEY = 'your-consumer-key'
+CONSUMER_SECRET = 'your-consumer-secret'
+ACCESS_TOKEN = 'your-access-token'
+ACCESS_TOKEN_SECRET = 'your-access-token-secret'
 
-base_url = "http://www.imdb.com/"
-imdb = IMDb()
-least_rating = 6
-duration_limit = 220
+imdb = Imdb()
+least_rating = 7
 
 oauth = OAuth1(CONSUMER_KEY,
                client_secret=CONSUMER_SECRET,
@@ -35,24 +34,16 @@ class MovieSuggestion():
 
     def get_movie(self):
         """
-        Gets a random movie from IMDB.
+        Gets a random movie from IMDB and suggestmovie.net
          
         """
-        random_url = "{}random/title".format(base_url)
-        movie_id_pattern = "app-argument=imdb:///title/tt(\d+)\?src=mdot"
-        html_for_movie_id = urllib2.urlopen(random_url).read()
-        object_id = re.findall(movie_id_pattern, html_for_movie_id)[0]
-        object = imdb.get_movie(object_id)
-        if not object['kind'] == 'movie':
-            object = self.get_movie()
-        return object
-
-    def has_rating(self):
-        """
-        Determines a movie is new or not. If movie has not imdb rating, it's new, otherwise not.
-         
-        """
-        self.rating = False if 'rating' in self.movie.data else True
+        html_for_movie_id = urllib2.urlopen("http://suggestmovie.net").read()
+        pattern = "http://www.imdb.com/title/tt(\\d+)"
+        object_id = re.findall(pattern, html_for_movie_id)[0]
+        movie = imdb.get_title_by_id("tt{}".format(object_id))
+        if movie.type == 'tv_series':
+            movie = self.get_movie()
+        return movie
 
     def get_trailer_or_poster_url(self):
         """
@@ -60,25 +51,11 @@ class MovieSuggestion():
           
         """
         movie = self.movie
-        trailer_id_pattern = "/video/imdb/vi(\d+)\?ref_=ttvi_vi_imdb_1"
-        video_gallery_url = "{0}title/tt{1}/videogallery/content_type-trailer?sort=duration" \
-                            "&sortDir=asc".format(base_url, movie.movieID)
-        html_for_trailer_id = urllib2.urlopen(video_gallery_url).read()
-        trailer = re.findall(trailer_id_pattern, html_for_trailer_id)
-        if not trailer:
-            return 'image', movie['full-size cover url']
-        trailer_id = trailer[0]
-        video_pattern = "vi%s\":{\"aggregateUpVotes\":.*?duration\":\"([\d:\d]*).*?" \
-                        "videoUrl\":\"(.*?)\"},{\"definition" % trailer_id
-        video_url = "http://www.imdb.com/title/tt{0}/videoplayer/vi{1}".format(movie.movieID,
-                                                                               trailer_id)
-        html_video = urllib2.urlopen(video_url).read()
-        duration, video_link = re.findall(video_pattern, html_video)[0]
-        self.duration = False if int(duration.replace(':', '')) > duration_limit else True
-        if not self.duration:
-            print("Trailer's duration is({}) more than accepted duration(2:20)").format(duration)
 
-        return 'video', video_link
+        if not movie.trailers:
+            return 'image', movie.poster_url
+
+        return 'video', movie.trailers[0]['url']
 
     def download_file(self, url, file_name, file_type):
         """
@@ -102,32 +79,17 @@ class MovieSuggestion():
         """
         print("Tweet is being prepared.")
         movie = self.movie
-        base = "\xF0\x9F\x8E\xA5: {0}   \xF0\x9F\x93\x85: {1}".format(movie['title'], movie['year'])
-        option = "  #comingsoon" if self.rating else "  \xE2\xAD\x90: {0}  ".format(
-            movie['rating'])
-        genre_hashtags = ['#{0}'.format(genre.lower().replace('-', '')) for genre in
-                          movie['genres']]
+        base = "\xF0\x9F\x8E\xA5: {0}   \xF0\x9F\x93\x85: {1}".format(movie.title, movie.year)
+        option = "  #comingsoon" if not self.rating else "  \xE2\xAD\x90: {0}  ".format(movie.rating)
+        genre_hashtags = ['#{0}'.format(genre.lower().replace('-', '')) for genre in movie.genres]
         removed_signs = ['-', ' ', ':', '\'']
-        movie_name = movie['title'].title()
+        movie_name = movie.title
         for sign in removed_signs:
             if sign in movie_name:
                 movie_name = movie_name.replace(sign, '')
         hashtags = ['#{}'.format(movie_name), '#movie']
         hashtags.extend(genre_hashtags)
-        self.tweet = self.control_character_limit(' '.join([base, option, ' '.join(hashtags)]))
-
-    def control_character_limit(self, tweet):
-        """
-        Controls tweet's character, if it's more than 140 character, last hashtag is removed 
-        and controlled again.
-
-        """
-        if len(tweet) <= 140:
-            return tweet
-        split_list = tweet.split(' ')
-        del split_list[-1]
-        tweet = ' '.join(split_list)
-        return self.control_character_limit(tweet)
+        self.tweet = ' '.join([base, option, ' '.join(hashtags)])
 
     def send_tweet(self, media_id):
         """
@@ -144,31 +106,43 @@ class MovieSuggestion():
         os.remove(self.file_name)
         print("Tweet has sent successfully.")
 
+    def sending_process(self, file_type=None, file_url=None):
+        """
+        Media uploading and sending tweet process.
+
+        """
+
+        file_type, file_url = self.get_trailer_or_poster_url() if not file_type else (file_type, file_url)
+        print("Movie will be shared with {} ").format(file_type)
+        movie_name = self.movie.title.lower().replace(' ', '_')
+        self.download_file(file_url, movie_name, file_type)
+        media_upload = async_upload.VideoTweet(self.file_name, oauth)
+        media_id = media_upload.upload_init(file_type)
+        media_upload.upload_append()
+        try:
+            media_upload.upload_finalize()
+        except:
+            self.sending_process(file_type='image', file_url=self.movie.poster_url)
+
+        self.send_tweet(media_id)
+        sys.exit()
+
     def run(self):
         """
         Runs and tweets one random movie with trailer or movie poster.
          
         """
         self.movie = self.get_movie()
-        print("Movie Name: {}").format(self.movie['title'])
-        self.has_rating()
-        if not self.rating and self.movie['rating'] < least_rating:
-            print("Movie's rating({}) is less than least rating({})").format(self.movie['rating'],
-                                                                             least_rating)
+        print("Movie Name: {}").format(self.movie.title)
+        self.rating = bool(self.movie.rating)
+
+        if self.rating and self.movie.rating < least_rating:
+            print("Movie's rating({}) is less than least rating({})").format(self.movie.rating, least_rating)
             return self.run()
-        file_type, file_url = self.get_trailer_or_poster_url()
-        if file_type == 'video' and not self.duration:
-            return self.run()
-        print("Movie will be shared with {} ").format(file_type)
-        movie_name = self.movie['title'].lower().replace(' ', '_')
-        self.download_file(file_url, movie_name, file_type)
-        media_upload = async_upload.VideoTweet(self.file_name, oauth)
-        media_id = media_upload.upload_init(file_type)
-        media_upload.upload_append()
-        media_upload.upload_finalize()
-        self.send_tweet(media_id)
-        return
+
+        self.sending_process()
 
 
 if __name__ == '__main__':
     MovieSuggestion().run()
+
