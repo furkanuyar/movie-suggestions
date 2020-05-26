@@ -1,5 +1,10 @@
+setuptools
 oauthlib
 requests
 requests-oauthlib
-twitter-media-upload
 imdbpie
+twitter_media_upload
+youtube_dl
+moviepy
+tweepy
+selenium

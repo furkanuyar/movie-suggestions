@@ -1,148 +1,109 @@
+# -*- coding: utf-8 -*-
+
 import re
-import os
 import sys
 import urllib2
 import requests
-from requests_oauthlib import OAuth1
+import logic
 from twitter_media_upload import async_upload
-from imdbpie import Imdb
-
-POST_TWEET_URL = 'https://api.twitter.com/1.1/statuses/update.json'
-
-CONSUMER_KEY = 'your-consumer-key'
-CONSUMER_SECRET = 'your-consumer-secret'
-ACCESS_TOKEN = 'your-access-token'
-ACCESS_TOKEN_SECRET = 'your-access-token-secret'
-
-imdb = Imdb()
-least_rating = 7
-
-oauth = OAuth1(CONSUMER_KEY,
-               client_secret=CONSUMER_SECRET,
-               resource_owner_key=ACCESS_TOKEN,
-               resource_owner_secret=ACCESS_TOKEN_SECRET)
+from argparse import Namespace
+from settings import constants
+from config import MOVIE_SUGGESTION_SOURCE, imdb, oauth
 
 
-class MovieSuggestion():
+class MovieSuggestion:
+
     def __init__(self):
         self.movie = None
-        self.rating = None
-        self.total_bytes = None
-        self.media_id = None
-        self.tweet = None
-        self.duration = None
+        self.trailer_url = None
 
     def get_movie(self):
         """
-        Gets a random movie from IMDB and suggestmovie.net
-         
+        Gets a random movie
+
         """
-        html_for_movie_id = urllib2.urlopen("http://suggestmovie.net").read()
-        pattern = "http://www.imdb.com/title/tt(\\d+)"
-        object_id = re.findall(pattern, html_for_movie_id)[0]
-        movie = imdb.get_title_by_id("tt{}".format(object_id))
-        if movie.type == 'tv_series':
-            movie = self.get_movie()
+        html_content = urllib2.urlopen(MOVIE_SUGGESTION_SOURCE).read()
+        imdb_id = re.findall(constants.IMDB_ID_PATTERN, html_content)[0]
+        self.trailer_url = logic.get_movie_trailer_url(html_content)
+
+        movie = imdb.get_title_auxiliary("tt{}".format(imdb_id))
+        movie = logic.convert_unicode_to_string(movie)
+        movie = Namespace(**movie)
+
         return movie
 
-    def get_trailer_or_poster_url(self):
+    def download_file(self):
         """
-        If a movie has a trailer, gets trailer, otherwise gets movie's poster.
-          
-        """
-        movie = self.movie
+        Downloads movie's trailer or poster
 
-        if not movie.trailers:
-            return 'image', movie.poster_url
-
-        return 'video', movie.trailers[0]['url']
-
-    def download_file(self, url, file_name, file_type):
         """
-        Downloads movie's poster or trailer.
-         
-        """
-        print("File is downloading...")
-        self.file_format = 'mp4' if file_type == 'video' else 'jpg'
-        self.file_name = ('.').join([file_name, self.file_format])
-        r = requests.get(url, stream=True)
-        with open(self.file_name, 'wb') as f:
-            for chunk in r.iter_content(chunk_size=1024):
-                if chunk:
-                    f.write(chunk)
-        self.total_bytes = os.path.getsize(self.file_name)
+        try:
+            logic.prepare_trailer(self.trailer_url)
+            return constants.OPTIMIZED_TRAILER_FILE_NAME, 'video'
+
+        except Exception as e:
+            print('Download Trailer Error', str(e))
+            logic.prepare_poster(self.movie.image['url'])
+            return constants.POSTER_FILE_NAME, "image"
 
     def prepare_tweet(self):
         """
-        Prepare movie's tweet with movie's genres, year, imdb rating and name.
+        Prepares tweet with movie's genres, year, imdb rating and name
 
         """
-        print("Tweet is being prepared.")
-        movie = self.movie
-        base = "\xF0\x9F\x8E\xA5: {0}   \xF0\x9F\x93\x85: {1}".format(movie.title, movie.year)
-        option = "  #comingsoon" if not self.rating else "  \xE2\xAD\x90: {0}  ".format(movie.rating)
-        genre_hashtags = ['#{0}'.format(genre.lower().replace('-', '')) for genre in movie.genres]
-        removed_signs = ['-', ' ', ':', '\'']
-        movie_name = movie.title
-        for sign in removed_signs:
-            if sign in movie_name:
-                movie_name = movie_name.replace(sign, '')
-        hashtags = ['#{}'.format(movie_name), '#movie']
-        hashtags.extend(genre_hashtags)
-        self.tweet = ' '.join([base, option, ' '.join(hashtags)])
+        tweet_base = logic.prepare_tweet_base_with_movie_details(self.movie.title, self.movie.year, self.movie.rating)
+        hashtags = logic.get_hashtags(self.movie.genres, self.movie.title)
+
+        return ' '.join([tweet_base, ' '.join(hashtags)])
 
     def send_tweet(self, media_id):
         """
-        Sends tweet with movie's poster or trailer.
-         
+        Sends tweet with movie details
+
         """
-        self.prepare_tweet()
+        tweet = self.prepare_tweet()
         request_data = {
-            'status': self.tweet,
+            'status': tweet,
             'media_ids': media_id
         }
 
-        requests.post(url=POST_TWEET_URL, data=request_data, auth=oauth)
-        os.remove(self.file_name)
+        requests.post(url=constants.POST_TWEET_URL, data=request_data, auth=oauth)
         print("Tweet has sent successfully.")
 
-    def sending_process(self, file_type=None, file_url=None):
+    def sending_process(self):
         """
-        Media uploading and sending tweet process.
+        Media uploading and sending tweet process
 
         """
-
-        file_type, file_url = self.get_trailer_or_poster_url() if not file_type else (file_type, file_url)
-        print("Movie will be shared with {} ").format(file_type)
-        movie_name = self.movie.title.lower().replace(' ', '_')
-        self.download_file(file_url, movie_name, file_type)
-        media_upload = async_upload.VideoTweet(self.file_name, oauth)
+        file_name, file_type = self.download_file()
+        media_upload = async_upload.VideoTweet(file_name, oauth)
         media_id = media_upload.upload_init(file_type)
         media_upload.upload_append()
         try:
             media_upload.upload_finalize()
-        except:
-            self.sending_process(file_type='image', file_url=self.movie.poster_url)
+        except Exception as e:
+            print('Media Upload Error', str(e))
+            return self.run()
 
         self.send_tweet(media_id)
-        sys.exit()
 
     def run(self):
         """
-        Runs and tweets one random movie with trailer or movie poster.
-         
-        """
-        self.movie = self.get_movie()
-        print("Movie Name: {}").format(self.movie.title)
-        self.rating = bool(self.movie.rating)
+        Finds suitable movie and tweet with details
 
-        if self.rating and self.movie.rating < least_rating:
-            print("Movie's rating({}) is less than least rating({})").format(self.movie.rating, least_rating)
+        """
+        logic.start_operations()
+        self.movie = self.get_movie()
+        print 'Chosen movie: {} | Year: {}'.format(self.movie.title, self.movie.year)
+
+        is_movie_suitable = logic.is_movie_suitable(self.movie)
+        if not is_movie_suitable:
             return self.run()
 
         self.sending_process()
+        logic.remove_movie_medias()
+        sys.exit()
 
 
 if __name__ == '__main__':
     MovieSuggestion().run()
-
