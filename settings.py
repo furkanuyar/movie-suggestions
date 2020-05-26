@@ -6,7 +6,6 @@ constants = {
     'START_LIMIT': 0,
     'DURATION_LIMIT': 140,
     'YEAR_LIMIT': 1980,
-    'BEST_VIDEO_QUALITY_FORMAT': 'bestvideo/best',
     'TRAILER_FILE_NAME': 'trailer.mp4',
     'OPTIMIZED_TRAILER_FILE_NAME': 'optimized.mp4',
     'POSTER_FILE_NAME': "poster.jpg",
@@ -32,7 +31,8 @@ constants = {
     'UNFOLLOW_APPLY_SLEEP_TIME_RANGE': [5, 10],
     'LOGIN_BUTTON_XPATH': '//*[@id="react-root"]/div/div/div[2]/main/div/div/form/div/div[3]',
     'UNFOLLOW_APPLY_BUTTON_XPATH':
-        '//*[@id="react-root"]/div/div/div[1]/div[2]/div/div/div/div[2]/div[2]/div[3]/div[2]/div/span/span'
+        '//*[@id="react-root"]/div/div/div[1]/div[2]/div/div/div/div[2]/div[2]/div[3]/div[2]/div/span/span',
+    'MP4_VIDEO_FORMATS': ['22', '18']
 }
 
 constants = Namespace(**constants)

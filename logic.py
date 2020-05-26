@@ -43,19 +43,26 @@ def get_hashtags(genres, title):
     return movie_hashtags
 
 
-def download_youtube_trailer(video_url):
+def download_youtube_trailer(video_url, index=0):
     """
     Downloads youtube trailer
 
     """
+    if len(constants.MP4_VIDEO_FORMATS) == index:
+        raise Exception()
+
     video_url = video_url.strip()
     ydl_opts = {
-        'format': constants.BEST_VIDEO_QUALITY_FORMAT,
+        'format': constants.MP4_VIDEO_FORMATS[index],
+        'keepvideo': True,
         'outtmpl': './{}'.format(constants.TRAILER_FILE_NAME)
     }
 
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([video_url])
+    try:
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([video_url])
+    except:
+        return download_youtube_trailer(video_url, index + 1)
 
     return constants.TRAILER_FILE_NAME
 
