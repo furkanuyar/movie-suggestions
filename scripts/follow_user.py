@@ -1,9 +1,12 @@
 import tweepy
 import random
 import sys
+import os
 
-sys.path.append('../config')
-sys.path.append('../settings')
+#sys.path.append('../config')
+#sys.path.append('../settings')
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from config import api
 from settings import constants
 
@@ -22,8 +25,6 @@ suitable_users = filter(
 print 'Suitable user count:', len(suitable_users)
 
 suitable_user_ids = map(lambda record: record.user.id, suitable_users)
-current_user_ids = [user.id for user in tweepy.Cursor(api.friends, screen_name=constants.USER_NAME).items()]
-candidate_user_ids = list(set(suitable_user_ids) - set(current_user_ids))
-user_id = random.choice(candidate_user_ids)
+user_id = random.choice(suitable_user_ids)
 api.create_friendship(user_id)
-print 'Followed user id:', user_id
+print('Followed user_id', user_id)
