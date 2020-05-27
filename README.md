@@ -1,4 +1,4 @@
 # Movie Suggestions
-Takes a random movie from IMDB. Downloads trailer if a movie has, otherwise movie poster. Adds related hashtags and tweets with downloaded movie media.
+Twitter bot that shares a movie with its media (trailer or poster)
 
 Can be reached from this twitter account: https://twitter.com/suggests_movie
