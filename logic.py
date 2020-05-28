@@ -27,16 +27,25 @@ def start_operations():
     remove_movie_medias()
 
 
+def remove_invalid_signs(title):
+    """
+    Removes invalid signs from movie name for hashtag
+
+    """
+    for sign in constants.INVALID_SIGNS:
+        if sign in title:
+            title = title.replace(sign, '')
+
+    return title
+
+
 def get_hashtags(genres, title):
     """
     Gets movie hashtags
 
     """
-    genre_hashtags = ['#{0}'.format(genre.lower().replace('-', '')) for genre in genres]
-    removed_signs = ['-', ' ', ':', '\'', '.']
-    for sign in removed_signs:
-        if sign in title:
-            title = title.replace(sign, '')
+    genre_hashtags = ['#{}'.format(genre.lower().replace('-', '')) for genre in genres]
+    title = remove_invalid_signs(title)
     movie_hashtags = ['#{}'.format(title), '#movie']
     movie_hashtags.extend(genre_hashtags)
 
@@ -45,7 +54,8 @@ def get_hashtags(genres, title):
 
 def download_youtube_trailer(video_url, index=0):
     """
-    Downloads youtube trailer
+    Downloads youtube trailer by trying recursively
+    from high quality to low quality
 
     """
     if len(constants.MP4_VIDEO_FORMATS) == index:
@@ -61,7 +71,8 @@ def download_youtube_trailer(video_url, index=0):
     try:
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             ydl.download([video_url])
-    except:
+    except Exception as e:
+        print 'Download youtube trailer error', str(e)
         return download_youtube_trailer(video_url, index + 1)
 
     return constants.TRAILER_FILE_NAME
@@ -131,6 +142,7 @@ def get_movie_trailer_url(html_content):
 def is_movie_suitable(movie):
     """
     Checks chosen movie is suitable or not
+
     """
     if not movie.rating or (movie.rating and movie.rating < constants.LEAST_RATING):
         return False
