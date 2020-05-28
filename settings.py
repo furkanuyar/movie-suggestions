@@ -32,7 +32,8 @@ constants = {
     'LOGIN_BUTTON_XPATH': '//*[@id="react-root"]/div/div/div[2]/main/div/div/form/div/div[3]',
     'UNFOLLOW_APPLY_BUTTON_XPATH':
         '//*[@id="react-root"]/div/div/div[1]/div[2]/div/div/div/div[2]/div[2]/div[3]/div[2]/div/span/span',
-    'MP4_VIDEO_FORMATS': ['22', '18']
+    'MP4_VIDEO_FORMATS': ['22', '18'],
+    'INVALID_SIGNS': ['-', ' ', ':', '\'', '.']
 }
 
 constants = Namespace(**constants)
