@@ -5,6 +5,7 @@ import sys
 import urllib2
 import requests
 import logic
+import util
 from twitter_media_upload import async_upload
 from argparse import Namespace
 from settings import constants
@@ -19,7 +20,8 @@ class MovieSuggestion:
 
     def get_movie(self):
         """
-        Gets a random movie
+        Finds a random movie from the movie source,
+        gets movie's imdb details and trailer url
 
         """
         html_content = urllib2.urlopen(MOVIE_SUGGESTION_SOURCE).read()
@@ -27,14 +29,15 @@ class MovieSuggestion:
         self.trailer_url = logic.get_movie_trailer_url(html_content)
 
         movie = imdb.get_title_auxiliary("tt{}".format(imdb_id))
-        movie = logic.convert_unicode_to_string(movie)
+        movie = util.convert_unicode_to_string(movie)
         movie = Namespace(**movie)
 
         return movie
 
     def download_file(self):
         """
-        Downloads movie's trailer or poster
+        Downloads movie's trailer but if there is an error
+        downloads movie's poster as default
 
         """
         try:
@@ -54,7 +57,7 @@ class MovieSuggestion:
         tweet_base = logic.prepare_tweet_base_with_movie_details(self.movie.title, self.movie.year, self.movie.rating)
         hashtags = logic.get_hashtags(self.movie.genres, self.movie.title)
 
-        return ' '.join([tweet_base, ' '.join(hashtags)])
+        return '{} {}'.format(tweet_base, ' '.join(hashtags))
 
     def send_tweet(self, media_id):
         """
@@ -68,7 +71,6 @@ class MovieSuggestion:
         }
 
         requests.post(url=constants.POST_TWEET_URL, data=request_data, auth=oauth)
-        print("Tweet has sent successfully.")
 
     def sending_process(self):
         """
@@ -89,7 +91,7 @@ class MovieSuggestion:
 
     def run(self):
         """
-        Finds suitable movie and tweet with details
+        Finds suitable movie and send tweet with details
 
         """
         logic.start_operations()
@@ -101,6 +103,7 @@ class MovieSuggestion:
             return self.run()
 
         self.sending_process()
+        print 'Tweet sent successfully for that movie'.format(self.movie.title)
         logic.remove_movie_medias()
         sys.exit()
 
