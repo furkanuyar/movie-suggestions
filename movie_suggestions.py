@@ -103,7 +103,7 @@ class MovieSuggestion:
             return self.run()
 
         self.sending_process()
-        print 'Tweet sent successfully for that movie'.format(self.movie.title)
+        print 'Tweet sent successfully for that movie {}'.format(self.movie.title)
         logic.remove_movie_medias()
         sys.exit()
 
