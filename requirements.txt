@@ -8,3 +8,4 @@ youtube_dl
 moviepy
 tweepy
 selenium
+imageio==2.4.1

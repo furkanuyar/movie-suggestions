@@ -72,7 +72,7 @@ def download_youtube_trailer(video_url, index=0):
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             ydl.download([video_url])
     except Exception as e:
-        print 'Download youtube trailer error', str(e)
+        print('Download youtube trailer error', str(e))
         return download_youtube_trailer(video_url, index + 1)
 
     return constants.TRAILER_FILE_NAME

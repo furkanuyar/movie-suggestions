@@ -43,7 +43,7 @@ while True:
                 time.sleep(random.randrange(*constants.UNFOLLOW_APPLY_SLEEP_TIME_RANGE))
                 unfollow_count += 1
                 print('Unfollow count', unfollow_count)
-            except Exception, e:
+            except Exception as e:
                 print('Unfollow error', str(e))
                 pass
 

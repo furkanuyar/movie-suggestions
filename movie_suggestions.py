@@ -2,10 +2,9 @@
 
 import re
 import sys
-import urllib2
+from urllib.request import urlopen
 import requests
 import logic
-import util
 from twitter_media_upload import async_upload
 from argparse import Namespace
 from settings import constants
@@ -24,12 +23,11 @@ class MovieSuggestion:
         gets movie's imdb details and trailer url
 
         """
-        html_content = urllib2.urlopen(MOVIE_SUGGESTION_SOURCE).read()
+        html_content = urlopen(MOVIE_SUGGESTION_SOURCE).read().decode('utf-8')
         imdb_id = re.findall(constants.IMDB_ID_PATTERN, html_content)[0]
         self.trailer_url = logic.get_movie_trailer_url(html_content)
 
         movie = imdb.get_title_auxiliary("tt{}".format(imdb_id))
-        movie = util.convert_unicode_to_string(movie)
         movie = Namespace(**movie)
 
         return movie
@@ -96,14 +94,14 @@ class MovieSuggestion:
         """
         logic.start_operations()
         self.movie = self.get_movie()
-        print 'Chosen movie: {} | Year: {}'.format(self.movie.title, self.movie.year)
+        print('Chosen movie: {} | Year: {}'.format(self.movie.title, self.movie.year))
 
         is_movie_suitable = logic.is_movie_suitable(self.movie)
         if not is_movie_suitable:
             return self.run()
 
         self.sending_process()
-        print 'Tweet sent successfully for that movie {}'.format(self.movie.title)
+        print('Tweet sent successfully for that movie {}'.format(self.movie.title))
         logic.remove_movie_medias()
         sys.exit()
 
