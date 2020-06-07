@@ -46,7 +46,7 @@ def get_hashtags(genres, title):
     """
     genre_hashtags = ['#{}'.format(genre.lower().replace('-', '')) for genre in genres]
     title = remove_invalid_signs(title)
-    movie_hashtags = ['#{}'.format(title), '#movie']
+    movie_hashtags = ['#{}'.format(title)]
     movie_hashtags.extend(genre_hashtags)
 
     return movie_hashtags
