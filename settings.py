@@ -26,7 +26,7 @@ constants = {
     'LOGIN_SCREEN_WAIT_TIME': 3,
     'TWITTER_LOGIN_URL': 'https://twitter.com/login',
     'TWITTER_FOLLOWING_URL': 'https://twitter.com/following',
-    'UNFOLLOW_NOT_APPLY_LIMIT': 50,
+    'UNFOLLOW_NOT_APPLY_LIMIT': 300,
     'UNFOLLOW_SLEEP_TIME_RANGE': [1, 5],
     'UNFOLLOW_APPLY_SLEEP_TIME_RANGE': [5, 10],
     'LOGIN_BUTTON_XPATH': '//*[@id="react-root"]/div/div/div[2]/main/div/div/form/div/div[3]',
