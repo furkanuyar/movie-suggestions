@@ -12,9 +12,10 @@ constants = {
     'IMDB_ID_PATTERN': "https://www.imdb.com/title/tt(\\d+)",
     'TRAILER_VIDEO_ID_PATTERN': 'src="https://www.youtube.com/embed/(.*)?" ',
     'VIDEO_URL_INITIAL': "https://www.youtube.com/embed/",
-    'CAMERA_EMOJI': '\U0001F3A5',
+    'DIRECTOR_EMOJI': '\U0001F3A5',
     'CALENDAR_EMOJI': '\U0001F4C5',
     'RATING_EMOJI': '\U0001F31F',
+    'CLAPPER_BOARD_EMOJI': '\U0001F3AC',
     'USER_NAME': 'suggests_movie',
     'TREND_TOPIC_LENGTH_LIMIT': 5,
     'SEARCH_TWEET_LIMIT': 300,
@@ -33,7 +34,8 @@ constants = {
     'UNFOLLOW_APPLY_BUTTON_XPATH':
         '//*[@id="react-root"]/div/div/div[1]/div[2]/div/div/div/div[2]/div[2]/div[3]/div[2]/div/span/span',
     'MP4_VIDEO_FORMATS': ['22', '18'],
-    'INVALID_SIGNS': ['-', ' ', ':', '\'', '.', '&']
+    'INVALID_SIGNS': ['-', ' ', ':', '\'', '.', '&'],
+    'TWEET_MAX_CHAR_LIMIT': 280
 }
 
 constants = Namespace(**constants)

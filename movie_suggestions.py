@@ -16,6 +16,7 @@ class MovieSuggestion:
     def __init__(self):
         self.movie = None
         self.trailer_url = None
+        self.director = None
 
     def get_movie(self):
         """
@@ -49,13 +50,13 @@ class MovieSuggestion:
 
     def prepare_tweet(self):
         """
-        Prepares tweet with movie's genres, year, imdb rating and name
+        Prepares tweet with movie's name, genres, year, imdb rating and director name
 
         """
-        tweet_base = logic.prepare_tweet_base_with_movie_details(self.movie.title, self.movie.year, self.movie.rating)
-        hashtags = logic.get_hashtags(self.movie.genres, self.movie.title)
+        tweet_base = logic.prepare_tweet_base_with_movie_details(self.movie, self.director)
+        details = logic.get_helper_details(self.movie, tweet_base, self.director)
 
-        return '{} {}'.format(tweet_base, ' '.join(hashtags))
+        return '{} {}'.format(tweet_base, details)
 
     def send_tweet(self, media_id):
         """
@@ -94,6 +95,7 @@ class MovieSuggestion:
         """
         logic.start_operations()
         self.movie = self.get_movie()
+        self.director = self.movie.directors[0]['name']
         print('Chosen movie: {} | Year: {}'.format(self.movie.title, self.movie.year))
 
         is_movie_suitable = logic.is_movie_suitable(self.movie)

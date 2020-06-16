@@ -39,17 +39,40 @@ def remove_invalid_signs(title):
     return title
 
 
-def get_hashtags(genres, title):
+def get_hashtags(genres, title, director):
     """
     Gets movie hashtags
 
     """
     genre_hashtags = ['#{}'.format(genre.lower().replace('-', '')) for genre in genres]
     title = remove_invalid_signs(title)
-    movie_hashtags = ['#{}'.format(title)]
+    director = remove_invalid_signs(director)
+    movie_hashtags = ['#{}'.format(title), '#{}'.format(director)]
     movie_hashtags.extend(genre_hashtags)
 
     return movie_hashtags
+
+
+def get_helper_details(movie, tweet_base, director):
+    """
+    Gets movie helper details
+
+    """
+    description = movie.plot['outline']['text']
+    hashtag_list = get_hashtags(movie.genres, movie.title, director)
+    hashtags = ' '.join(hashtag_list)
+    tweet_with_description = '{} {}'.format(tweet_base, description)
+
+    if len(tweet_with_description) <= constants.TWEET_MAX_CHAR_LIMIT:
+        description_with_hashtags = '{} {}'.format(description, hashtags)
+        tweet_with_all_details = '{} {}'.format(tweet_base, description_with_hashtags)
+
+        if len(tweet_with_all_details) <= constants.TWEET_MAX_CHAR_LIMIT:
+            return description_with_hashtags
+
+        return description
+
+    return hashtags
 
 
 def download_youtube_trailer(video_url, index=0):
@@ -78,13 +101,17 @@ def download_youtube_trailer(video_url, index=0):
     return constants.TRAILER_FILE_NAME
 
 
-def prepare_tweet_base_with_movie_details(title, year, rating):
+def prepare_tweet_base_with_movie_details(movie, director):
     """
-    Prepares tweet base with movie's title, year and rating details
+    Prepares tweet base with movie's name, year, rating and director name details
 
     """
-    return "{} {}   {} {}   {} {}".format(
-        constants.CAMERA_EMOJI, title, constants.CALENDAR_EMOJI, year, constants.RATING_EMOJI, rating)
+    return "{} {}  {} {}  {} {}  {} {}".format(
+        constants.CLAPPER_BOARD_EMOJI, movie.title,
+        constants.CALENDAR_EMOJI, movie.year,
+        constants.DIRECTOR_EMOJI, director,
+        constants.RATING_EMOJI, movie.rating
+    )
 
 
 def prepare_trailer(trailer_url):
