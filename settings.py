@@ -35,7 +35,8 @@ constants = {
         '//*[@id="react-root"]/div/div/div[1]/div[2]/div/div/div/div[2]/div[2]/div[3]/div[2]/div/span/span',
     'MP4_VIDEO_FORMATS': ['22', '18'],
     'INVALID_SIGNS': ['-', ' ', ':', '\'', '.', '&'],
-    'TWEET_MAX_CHAR_LIMIT': 280
+    'TWEET_MAX_CHAR_LIMIT': 280,
+    'MAX_CAST_LIMIT': 3
 }
 
 constants = Namespace(**constants)

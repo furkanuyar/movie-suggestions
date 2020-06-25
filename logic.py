@@ -8,6 +8,7 @@ import youtube_dl
 import requests
 from settings import constants
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
+import numpy as np
 
 
 def remove_movie_medias():
@@ -39,18 +40,34 @@ def remove_invalid_signs(title):
     return title
 
 
-def get_hashtags(genres, title, director):
+def get_hashtags(movie, director):
     """
     Gets movie hashtags
 
     """
-    genre_hashtags = ['#{}'.format(genre.lower().replace('-', '')) for genre in genres]
-    title = remove_invalid_signs(title)
-    director = remove_invalid_signs(director)
-    movie_hashtags = ['#{}'.format(title), '#{}'.format(director)]
-    movie_hashtags.extend(genre_hashtags)
+    cast_list = [principle['name'] for principle in movie.principals[:constants.MAX_CAST_LIMIT]]
+    genres = [genre.lower() for genre in movie.genres]
+    total_movie_details = np.concatenate(([movie.title, director], cast_list, genres))
+    total_flat_details = [remove_invalid_signs(detail) for detail in total_movie_details]
+    movie_hashtags = ['#{}'.format(detail) for detail in total_flat_details]
 
     return movie_hashtags
+
+
+def evaluate_hashtags(tweet_base, description, hashtag_list):
+    if not len(hashtag_list):
+        return description
+
+    hashtags = ' '.join(hashtag_list)
+    description_with_hashtags = '{} {}'.format(description, hashtags)
+    tweet_with_all_details = '{} {}'.format(tweet_base, description_with_hashtags)
+
+    if len(tweet_with_all_details) <= constants.TWEET_MAX_CHAR_LIMIT:
+        return description_with_hashtags
+
+    hashtag_list = hashtag_list[:-1]
+
+    return evaluate_hashtags(tweet_base, description, hashtag_list)
 
 
 def get_helper_details(movie, tweet_base, director):
@@ -59,20 +76,13 @@ def get_helper_details(movie, tweet_base, director):
 
     """
     description = movie.plot['outline']['text']
-    hashtag_list = get_hashtags(movie.genres, movie.title, director)
-    hashtags = ' '.join(hashtag_list)
+    hashtag_list = get_hashtags(movie, director)
     tweet_with_description = '{} {}'.format(tweet_base, description)
 
     if len(tweet_with_description) <= constants.TWEET_MAX_CHAR_LIMIT:
-        description_with_hashtags = '{} {}'.format(description, hashtags)
-        tweet_with_all_details = '{} {}'.format(tweet_base, description_with_hashtags)
+        return evaluate_hashtags(tweet_base, description, hashtag_list)
 
-        if len(tweet_with_all_details) <= constants.TWEET_MAX_CHAR_LIMIT:
-            return description_with_hashtags
-
-        return description
-
-    return hashtags
+    return ' '.join(hashtag_list)
 
 
 def download_youtube_trailer(video_url, index=0):
