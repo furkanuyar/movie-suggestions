@@ -9,9 +9,8 @@ from settings import constants
 
 
 def get_suitable_users():
-    trend_topics = [trend['name'].encode('ascii', 'ignore').decode('utf-8') for trend in api.trends_place(1)[0]['trends']]
-    hashtags = list(filter(lambda trend_topic: len(trend_topic) > constants.TREND_TOPIC_LENGTH_LIMIT, trend_topics))
-    hashtag = random.choice(hashtags)
+    trend_topics = [trend['name'] for trend in api.trends_place(1)[0]['trends']]
+    hashtag = random.choice(trend_topics)
     print('Chosen hashtag:', hashtag)
 
     tweets = tweepy.Cursor(api.search, q=hashtag).items(constants.SEARCH_TWEET_LIMIT)
