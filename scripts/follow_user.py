@@ -20,16 +20,26 @@ def get_suitable_users():
     suitable_users = list(
         filter(lambda user: user.friends_count > constants.MIN_FRIENDS_LIMIT
                             and constants.MIN_FOLLOWERS_LIMIT < user.followers_count < constants.MAX_FOLLOWERS_LIMIT
-                            and re.match(constants.REAL_USER_PATTERN, user.name), users))
+                            and re.match(constants.REAL_USER_PATTERN, user.name)
+                            and not len(re.findall('\d', user.screen_name)) > constants.MIN_USERNAME_NUMBER_COUNT, users))
+
     print('Suitable user count:', len(suitable_users))
-    if not len(suitable_users):
+
+    suitable_user_ids = []
+
+    for user in suitable_users:
+        tweets = api.user_timeline(user.id)
+        # checks user has any own tweet without retweet
+        if any([not bool(tweet._json.get('retweeted_status', False)) for tweet in tweets]):
+            suitable_user_ids.append(user.id)
+
+    if not len(suitable_user_ids):
         return get_suitable_users()
 
-    return suitable_users
+    return suitable_user_ids
 
 
-suitable_users = get_suitable_users()
-suitable_user_ids = list(map(lambda user: user.id, suitable_users))
+suitable_user_ids = get_suitable_users()
 user_id = random.choice(suitable_user_ids)
 api.create_friendship(user_id)
 print('Followed user_id', user_id)
