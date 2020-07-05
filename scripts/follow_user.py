@@ -11,6 +11,7 @@ from settings import constants
 
 def get_suitable_users():
     trend_topics = [trend['name'] for trend in api.trends_place(1)[0]['trends']]
+    trend_topics = list(filter(lambda hashtag: len(hashtag) == len(hashtag.encode('utf-8')), trend_topics))
     hashtag = random.choice(trend_topics)
     print('Chosen hashtag:', hashtag)
 
