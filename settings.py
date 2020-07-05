@@ -18,7 +18,7 @@ constants = {
     'CLAPPER_BOARD_EMOJI': '\U0001F3AC',
     'USER_NAME': 'suggests_movie',
     'TREND_TOPIC_LENGTH_LIMIT': 5,
-    'SEARCH_TWEET_LIMIT': 300,
+    'SEARCH_TWEET_LIMIT': 600,
     'MIN_FRIENDS_LIMIT': 75,
     'MIN_FOLLOWERS_LIMIT': 50,
     'MAX_FOLLOWERS_LIMIT': 400,
@@ -36,7 +36,8 @@ constants = {
     'MP4_VIDEO_FORMATS': ['22', '18'],
     'INVALID_SIGNS': ['-', ' ', ':', '\'', '.', '&'],
     'TWEET_MAX_CHAR_LIMIT': 280,
-    'MAX_CAST_LIMIT': 3
+    'MAX_CAST_LIMIT': 3,
+    'REAL_USER_PATTERN': '[A-Z][a-z]* [A-Z][^<0-9.,()"\'!#>]*$'
 }
 
 constants = Namespace(**constants)
