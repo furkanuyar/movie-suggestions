@@ -37,8 +37,9 @@ constants = {
     'INVALID_SIGNS': ['-', ' ', ':', '\'', '.', '&'],
     'TWEET_MAX_CHAR_LIMIT': 280,
     'MAX_CAST_LIMIT': 3,
-    'REAL_USER_PATTERN': '[A-Z][a-z]* [A-Z][^<0-9.,()"\'!#>]*$',
-    'MIN_USERNAME_NUMBER_COUNT': 4
+    'REAL_USER_PATTERN': '^[A-Z][a-z]+ [A-Z][a-z]+[^<0-9.,()"\'!#|>]*$',
+    'MIN_USERNAME_NUMBER_COUNT': 4,
+    'MAX_SAME_HASHTAG_USAGE_LIMIT': 4
 }
 
 constants = Namespace(**constants)
