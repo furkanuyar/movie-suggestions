@@ -5,14 +5,14 @@ import os
 from selenium import webdriver
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from config import TWITTER_PASSWORD
+from config import TWITTER_PASSWORD, GECKODRIVER_PATH
 from settings import constants
 
 buttons = set()
 unfollow_count = 0
 height = constants.SCROLL_HEIGHT_LIMIT
 
-driver = webdriver.Firefox()
+driver = webdriver.Firefox(executable_path=GECKODRIVER_PATH)
 driver.get(constants.TWITTER_LOGIN_URL)
 
 username_field = driver.find_element_by_name("session[username_or_email]")

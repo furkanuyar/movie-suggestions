@@ -24,7 +24,7 @@ def start_operations():
     Installs plugin if it is not available and removes movie medias
 
     """
-    imageio.plugins.ffmpeg.download()
+    os.system("imageio_download_bin ffmpeg")
     remove_movie_medias()
 
 

@@ -9,3 +9,4 @@ moviepy
 tweepy
 selenium
 imageio==2.4.1
+bs4
