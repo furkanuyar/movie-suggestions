@@ -2,3 +2,6 @@
 venv
 *.mp4
 *.jpg
+geckodriver
+__pycache__
+*.log
