@@ -5,3 +5,4 @@ venv
 geckodriver
 __pycache__
 *.log
+*.pyc
