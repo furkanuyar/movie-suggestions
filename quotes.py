@@ -60,7 +60,6 @@ def download_poster(movie_poster_url):
     Downloads movie's poster
 
     """
-q
     logic.prepare_poster(movie_poster_url)
     return constants.POSTER_FILE_NAME, "image"
 
