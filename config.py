@@ -7,16 +7,16 @@ from imdbpie import Imdb
 
 imdb = Imdb()
 
-MOVIE_SUGGESTION_SOURCE = os.environ['MOVIE_SUGGESTION_SOURCE']
-MOVIE_QUOTE_SOURCE = os.environ['MOVIE_QUOTE_SOURCE']
-TWITTER_PASSWORD = os.environ['TWITTER_PASSWORD']
-GECKODRIVER_PATH = os.environ['GECKODRIVER_PATH']
-oauth = OAuth1(os.environ['CONSUMER_KEY'],
-               client_secret=os.environ['CONSUMER_SECRET'],
-               resource_owner_key=os.environ['ACCESS_TOKEN'],
-               resource_owner_secret=os.environ['ACCESS_TOKEN_SECRET'])
+MOVIE_SUGGESTION_SOURCE = os.environ.get('MOVIE_SUGGESTION_SOURCE')
+MOVIE_QUOTE_SOURCE = os.environ.get('MOVIE_QUOTE_SOURCE')
+TWITTER_PASSWORD = os.environ.get('TWITTER_PASSWORD')
+GECKODRIVER_PATH = os.environ.get('GECKODRIVER_PATH')
+oauth = OAuth1(os.environ.get('CONSUMER_KEY'),
+               client_secret=os.environ.get('CONSUMER_SECRET'),
+               resource_owner_key=os.environ.get('ACCESS_TOKEN'),
+               resource_owner_secret=os.environ.get('ACCESS_TOKEN_SECRET'))
 
-auth = tweepy.OAuthHandler(os.environ['CONSUMER_KEY'], os.environ['CONSUMER_SECRET'])
-auth.set_access_token(os.environ['ACCESS_TOKEN'], os.environ['ACCESS_TOKEN_SECRET'])
+auth = tweepy.OAuthHandler(os.environ.get('CONSUMER_KEY'), os.environ.get('CONSUMER_SECRET'))
+auth.set_access_token(os.environ.get('ACCESS_TOKEN'), os.environ.get('ACCESS_TOKEN_SECRET'))
 api = tweepy.API(auth, wait_on_rate_limit=True)
 
