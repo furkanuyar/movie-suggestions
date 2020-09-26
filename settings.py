@@ -35,7 +35,7 @@ constants = {
     'UNFOLLOW_APPLY_BUTTON_XPATH':
         '/html/body/div/div/div/div[1]/div[2]/div/div/div/div/div/div[2]/div[2]/div[3]/div[2]/div/span/span',
     'MP4_VIDEO_FORMATS': ['22', '18'],
-    'INVALID_SIGNS': ['-', ' ', ':', '\'', '.', '&'],
+    'INVALID_SIGNS': ['-', ' ', ':', '\'', '.', '&', ','],
     'TWEET_MAX_CHAR_LIMIT': 280,
     'MAX_CAST_LIMIT': 3,
     'REAL_USER_PATTERN': '^[A-Z][a-z]+ [A-Z][a-z]+[^<0-9.,()"\'!#|>]*$',
