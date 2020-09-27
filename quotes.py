@@ -51,8 +51,15 @@ def get_movie_poster_url(movie_name):
     result = imdb.search_for_title(movie_name)
     imdb_id = result[0]['imdb_id']
     movie = imdb.get_title_auxiliary(imdb_id)
+    image_url = ''
+    diff = 0
+    for image in movie['photos']['images']:
+        image_diff = image['width'] - image['height']
+        if image_diff > diff:
+            image_url = image['url']
+            diff = image_diff
 
-    return movie['image']['url']
+    return image_url
 
 
 def download_poster(movie_poster_url):
@@ -64,11 +71,13 @@ def download_poster(movie_poster_url):
     return constants.POSTER_FILE_NAME, "image"
 
 
-def send_tweet(media_id, tweet):
+def send_tweet(media_id, quote, movie_name):
     """
     Sends tweet with movie details
 
     """
+
+    tweet = '{} - {}'.format(quote, movie_name)
     request_data = {
         'status': tweet,
         'media_ids': media_id
@@ -78,7 +87,7 @@ def send_tweet(media_id, tweet):
 
 
 class Quote:
-    def sending_process(self, quote, movie_poster_url):
+    def sending_process(self, quote, movie_poster_url, movie_name):
         """
         Media uploading and sending tweet process
 
@@ -93,7 +102,7 @@ class Quote:
             print('Media Upload Error', str(e))
             return self.run()
 
-        send_tweet(media_id, quote)
+        send_tweet(media_id, quote, movie_name)
 
     def run(self):
         """
@@ -104,7 +113,7 @@ class Quote:
         (quote, movie_name) = get_quote_and_movie_name()
         print('Chosen movie: {}'.format(movie_name))
         movie_poster_url = get_movie_poster_url(movie_name)
-        self.sending_process(quote, movie_poster_url)
+        self.sending_process(quote, movie_poster_url, movie_name)
         logic.remove_movie_medias()
         sys.exit()
 
