@@ -29,7 +29,7 @@ driver.find_element_by_xpath(constants.LOGIN_BUTTON_XPATH).click()
 
 driver.get(constants.TWITTER_FOLLOWING_URL)
 
-while True:
+while unfollow_count < 1000:
     driver.execute_script("window.scrollTo(0," + str(height) + ")")
     height += constants.SCROLL_HEIGHT_LIMIT
     time.sleep(constants.SCROLL_PAUSE_TIME)
