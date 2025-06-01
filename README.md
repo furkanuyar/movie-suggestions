@@ -1,6 +1,6 @@
 # Movie Suggestions Twitter Bot
 
-A Twitter bot that automatically posts curated movie suggestions and interacts with users. It fetches movie data, shares engaging tweets with **posters and trailers**, likes relevant content, and can follow/unfollow users in a user-like manner.
+A Twitter bot that automatically posts movie suggestions with posters and trailers, engages with related content, and follows/unfollows users in a natural, human-like way.
 
 ## Features
 
